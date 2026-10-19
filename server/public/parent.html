@@ -50,6 +50,57 @@
 
         <section id="alerts" class="card"></section>
 
+        <section id="exam" class="card">
+          <div class="exam-head">
+            <h2>Exam mode</h2>
+            <span id="exam-status" class="badge off">Off</span>
+          </div>
+
+          <div id="exam-off">
+            <p class="muted">
+              Pauses distracting and AI websites in Chrome, pauses the buddy's chat and pictures, and counts tab
+              switches. Your child can see that exam mode is on, and sees the same record you do afterwards.
+            </p>
+            <form id="exam-form" class="row exam-start">
+              <select id="exam-minutes" aria-label="Exam length">
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="45" selected>45 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="90">1.5 hours</option>
+                <option value="120">2 hours</option>
+              </select>
+              <button type="submit">Start exam mode</button>
+            </form>
+          </div>
+
+          <div id="exam-on" hidden>
+            <p class="exam-time"><strong id="exam-left"></strong> left · ends at <span id="exam-end"></span></p>
+            <div class="exam-counts">
+              <div><strong id="ex-blocked">0</strong><span>paused-site visits</span></div>
+              <div><strong id="ex-tabs">0</strong><span>tab switches</span></div>
+              <div><strong id="ex-left">0</strong><span>times Chrome was left</span></div>
+            </div>
+            <button id="exam-stop" type="button" class="danger">End exam now</button>
+          </div>
+
+          <details class="how">
+            <summary id="blocklist-summary">Sites paused during exams</summary>
+            <p>One website per line. Subdomains are included (youtube.com also pauses m.youtube.com).</p>
+            <textarea id="blocklist" rows="8" spellcheck="false"></textarea>
+            <div class="row-end">
+              <button id="save-blocklist" type="button">Save list</button>
+              <span id="blocklist-saved" class="saved" hidden>Saved</span>
+            </div>
+          </details>
+
+          <div id="exam-history"></div>
+          <p class="privacy">
+            Needs the Study Buddy Exam Mode extension in your child's Chrome (see docs/exam-mode.md). It records numbers
+            only: no page content, no list of websites visited, no screenshots.
+          </p>
+        </section>
+
         <div class="grid">
           <section class="card">
             <h2>Quests</h2>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="ui.css" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="icons/icon48.png" alt="" width="36" height="36" />
+      <div>
+        <h1>Study Buddy Exam Mode</h1>
+        <span id="status" class="pill off">Checking…</span>
+      </div>
+    </header>
+
+    <p id="detail" class="detail"></p>
+
+    <div class="actions">
+      <button id="refresh" type="button">Check now</button>
+      <button id="settings" type="button" class="ghost">Settings</button>
+    </div>
+
+    <details class="what">
+      <summary>What does this extension see?</summary>
+      <p>
+        Only while a grown-up has turned on exam mode, it pauses the websites on their list and counts how many times
+        a paused site was opened, tabs were switched, and Chrome was left. It does not read pages, save which websites
+        you visit, or take screenshots. You see the same record your grown-up sees.
+      </p>
+    </details>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

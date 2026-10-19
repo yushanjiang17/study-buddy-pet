@@ -40,7 +40,7 @@ const HAS_KEY = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
 const SAFETY_CHECK = (process.env.SAFETY_CHECK || 'on').toLowerCase() !== 'off';
 const SAFETY_MODEL = process.env.SAFETY_MODEL || 'claude-haiku-5-5';
 
-const ANIMATIONS = new Set(['experiment', 'encourage', 'celebrate', 'give-quest', 'thinking', 'idle', 'sleep']);
+const ANIMATIONS = new Set(['experiment', 'encourage', 'celebrate', 'give-quest', 'thinking', 'idle', 'sleep', 'guard']);
 const SAFETY_CATEGORIES = new Set(['self_harm', 'abuse', 'unsafe_situation', 'bullying', 'distress']);
 const TUTOR_TEMPLATE = readFileSync(join(ROOT, 'prompts', 'tutor.md'), 'utf8');
 const BREAKDOWN_TEMPLATE = readFileSync(join(ROOT, 'prompts', 'breakdown.md'), 'utf8');
@@ -195,8 +195,16 @@ function studentState() {
     settings: store.getSettings(),
     usage: store.usageStatus(),
     today: { focusSessions: store.todaySummary().focusSessions },
+    exam: store.examPublic(),
   };
 }
+
+const EXAM_REPLY = {
+  reply: "It's exam time, hero! I'm guarding the gate, so I can't help until it's over. Trust yourself, you've got this!",
+  animation: 'guard',
+  hint_level: 0,
+  safety_flag: false,
+};
 
 // ---------- app ----------
 
@@ -215,7 +223,7 @@ app.get('/', (_req, res) => res.redirect('/parent/'));
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 // Everything the pet calls needs the device token (when one is set).
-app.use(['/chat', '/state', '/tasks', '/focus', '/usage'], auth.requireDevice);
+app.use(['/chat', '/state', '/tasks', '/focus', '/usage', '/exam'], auth.requireDevice);
 
 // ---------- student: chat ----------
 
@@ -241,6 +249,9 @@ app.post('/chat', async (req, res) => {
     store.recordFlag(keyword.category, 'keyword', 'watch');
     flagged.add(keyword.category);
   }
+
+  // Exam mode: no help with questions until the exam ends (checked here so no app can bypass it).
+  if (store.getExam()) return res.json(EXAM_REPLY);
 
   // Daily limits (messages and screen time).
   if (limitReached()) return res.json(SLEEP_REPLY);
@@ -295,6 +306,7 @@ app.post('/tasks/:id/breakdown', async (req, res) => {
   const task = store.getTask(req.params.id);
   if (!task) return res.status(404).json({ error: 'not_found' });
   if (checkInput(task.title).level === 'high') return res.status(400).json({ error: 'unsafe' });
+  if (store.getExam()) return res.status(423).json({ error: 'exam_mode' });
   if (limitReached()) return res.status(429).json({ error: 'daily_limit' });
   if (!client) return res.status(500).json({ error: 'missing_api_key' });
 
@@ -332,6 +344,16 @@ app.post('/focus/complete', (_req, res) => {
   res.json({ ...studentState(), result });
 });
 
+// ---------- exam mode (pet + Chrome extension) ----------
+
+app.get('/exam', (_req, res) => res.json(store.examPublic()));
+
+// The extension reports counts only: { type: 'blocked' | 'tab_switch' | 'left_browser', count }
+app.post('/exam/event', (req, res) => {
+  store.recordExamEvent(String(req.body?.type ?? ''), req.body?.count);
+  res.json(store.examPublic());
+});
+
 app.post('/usage/heartbeat', (_req, res) => {
   store.addUsageMinute();
   res.json(studentState());
@@ -358,6 +380,8 @@ app.get('/api/parent/summary', requireParent, (_req, res) => {
     points: store.getPoints(),
     tasks: store.listTasks(),
     week: store.recentDays(7),
+    exam: store.examPublic(),
+    examHistory: store.examHistory(10),
   });
 });
 
@@ -369,6 +393,16 @@ app.post('/api/parent/tasks', requireParent, (req, res) => {
 
 app.delete('/api/parent/tasks/:id', requireParent, (req, res) => {
   res.json({ ok: store.deleteTask(req.params.id) });
+});
+
+app.post('/api/parent/exam/start', requireParent, (req, res) => {
+  store.startExam(req.body?.minutes);
+  res.json(store.examPublic());
+});
+
+app.post('/api/parent/exam/stop', requireParent, (_req, res) => {
+  store.stopExam();
+  res.json(store.examPublic());
 });
 
 app.put('/api/parent/settings', requireParent, (req, res) => {

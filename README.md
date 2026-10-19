@@ -15,7 +15,7 @@ A desktop pet learning companion for K-12 students, connected to Claude. Course 
 | `art/` | Character art and sprite sheets | ✅ placeholder |
 | `app/` | Electron desktop pet: chat, quests, focus timer | ✅ Phases 1–3 |
 | `server/` | Backend: Claude API, quests, points, limits, parent page | ✅ Phases 2–3 |
-| `extension/` | Chrome extension (exam mode, "explain this") | Phase 4 |
+| `extension/` | Chrome extension: exam mode (pause sites, count tab switches) | ✅ Phase 4 |
 
 ## Run it (macOS)
 
@@ -70,6 +70,10 @@ Open <http://localhost:3000/parent> (or right-click the pet → Parent page). Si
 Parents can add/remove quests, set the daily screen-time limit and timer lengths, see today's numbers, safety alerts and the last 7 days. When screen time runs out, the pet goes to sleep and stops chatting until tomorrow.
 
 **Snip needs Screen Recording permission (macOS, one time):** the first time you snip, macOS asks for permission, or the pet says it needs it. Open System Settings → Privacy & Security → Screen & System Audio Recording, turn on **Electron**, then quit and restart the pet.
+
+### Exam mode
+
+A grown-up starts exam mode on the parent page (15 min to 2 h). The pet guards the gate (chat, pictures and the focus timer pause), the Chrome extension pauses sites on the parent's list and counts paused visits, tab switches and times Chrome loses focus. Numbers only, no URLs or screenshots, and the child sees the same record. Setup and testing: [`docs/exam-mode.md`](docs/exam-mode.md).
 
 ### Safety alerts
 

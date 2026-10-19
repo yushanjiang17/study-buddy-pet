@@ -226,6 +226,90 @@ function renderWeek(days) {
   );
 }
 
+// ---------- exam mode ----------
+
+const ENDED_BY = { timer: 'time up', parent: 'ended by you', restarted: 'restarted' };
+
+function renderExam(exam, history, blockList) {
+  const on = exam.active;
+  $('exam-status').className = `badge ${on ? 'on' : 'off'}`;
+  $('exam-status').textContent = on ? 'ON' : 'Off';
+  $('exam-off').hidden = on;
+  $('exam-on').hidden = !on;
+  if (on) {
+    const mins = Math.max(0, Math.ceil((Date.parse(exam.endsAt) - Date.now()) / 60000));
+    $('exam-left').textContent = mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`;
+    $('exam-end').textContent = fmtTime(exam.endsAt);
+    $('ex-blocked').textContent = exam.events.blocked;
+    $('ex-tabs').textContent = exam.events.tab_switch;
+    $('ex-left').textContent = exam.events.left_browser;
+  }
+
+  $('blocklist-summary').textContent = `Sites paused during exams (${blockList.length})`;
+  if (document.activeElement !== $('blocklist')) $('blocklist').value = blockList.join('\n');
+
+  const box = $('exam-history');
+  box.replaceChildren();
+  if (!history.length) return;
+  box.append(
+    el('h3', { textContent: 'Past exams' }),
+    el(
+      'table',
+      {},
+      el(
+        'thead',
+        {},
+        el(
+          'tr',
+          {},
+          el('th', { textContent: 'Started' }),
+          el('th', { className: 'num', textContent: 'Length' }),
+          el('th', { textContent: 'Ended' }),
+          el('th', { className: 'num', textContent: 'Paused visits' }),
+          el('th', { className: 'num', textContent: 'Tab switches' }),
+          el('th', { className: 'num', textContent: 'Left Chrome' }),
+        ),
+      ),
+      el(
+        'tbody',
+        {},
+        ...history.map((r) => {
+          const mins = Math.max(1, Math.round((Date.parse(r.endedAt) - Date.parse(r.startedAt)) / 60000));
+          return el(
+            'tr',
+            {},
+            el('td', { textContent: `${new Date(r.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} ${fmtTime(r.startedAt)}` }),
+            el('td', { className: 'num', textContent: `${mins} min` }),
+            el('td', { textContent: ENDED_BY[r.endedBy] ?? r.endedBy }),
+            el('td', { className: 'num', textContent: r.events.blocked }),
+            el('td', { className: 'num', textContent: r.events.tab_switch }),
+            el('td', { className: 'num', textContent: r.events.left_browser }),
+          );
+        }),
+      ),
+    ),
+  );
+}
+
+$('exam-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await api('POST', '/api/parent/exam/start', { minutes: $('exam-minutes').value }).catch(() => {});
+  refresh();
+});
+
+$('exam-stop').addEventListener('click', async () => {
+  await api('POST', '/api/parent/exam/stop').catch(() => {});
+  refresh();
+});
+
+$('save-blocklist').addEventListener('click', async () => {
+  await api('PUT', '/api/parent/settings', { examBlockList: $('blocklist').value }).catch(() => {});
+  $('blocklist').blur();
+  $('blocklist-saved').hidden = false;
+  setTimeout(() => ($('blocklist-saved').hidden = true), 2000);
+  refresh();
+});
+
 async function refresh() {
   try {
     const data = await api('GET', '/api/parent/summary');
@@ -235,6 +319,7 @@ async function refresh() {
     renderTasks(data.tasks);
     renderSettings(data.settings);
     renderWeek(data.week);
+    renderExam(data.exam, data.examHistory, data.settings.examBlockList);
   } catch {
     /* locked or server stopped */
   }
@@ -278,4 +363,4 @@ $('settings-form').addEventListener('submit', async (e) => {
   await refresh(); // shows the dashboard if this browser is already signed in, else the sign-in form
 })();
 
-setInterval(() => signedIn && refresh(), 30000);
+setInterval(() => signedIn && refresh(), 15000);

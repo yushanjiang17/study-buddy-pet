@@ -15,5 +15,5 @@
 ## Later
 
 - Canvas / Google Classroom: find assignments and worksheets automatically (paused).
-- Phase 4: Chrome extension + exam mode (disable chat, pictures and snip during exams).
+- ~~Phase 4: Chrome extension + exam mode~~ done. Possible next: "explain this" right-click in Chrome; force-install the extension with Chrome policy so it can't be turned off.
 - Proactive parent alerts (email) for urgent safety flags, now possible with the cloud server.

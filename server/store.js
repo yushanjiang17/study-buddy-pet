@@ -14,7 +14,34 @@ const DB_FILE = join(DATA_DIR, 'db.json');
 const OLD_USAGE_FILE = join(DATA_DIR, 'usage.json'); // Phase 2 format, imported once
 
 export const SUBJECTS = ['math', 'reading', 'writing', 'science', 'social_studies', 'other'];
-const DEFAULT_SETTINGS = { dailyMinutes: 60, focusMinutes: 25, breakMinutes: 5 };
+// Sites paused during exam mode: distractions plus AI / answer sites. Parents can edit the list.
+export const DEFAULT_EXAM_BLOCKLIST = [
+  'youtube.com',
+  'tiktok.com',
+  'instagram.com',
+  'snapchat.com',
+  'roblox.com',
+  'netflix.com',
+  'twitch.tv',
+  'discord.com',
+  'reddit.com',
+  'chatgpt.com',
+  'openai.com',
+  'claude.ai',
+  'gemini.google.com',
+  'copilot.microsoft.com',
+  'perplexity.ai',
+  'character.ai',
+  'poe.com',
+  'deepseek.com',
+  'photomath.com',
+  'gauthmath.com',
+  'brainly.com',
+  'chegg.com',
+];
+const DEFAULT_SETTINGS = { dailyMinutes: 60, focusMinutes: 25, breakMinutes: 5, examBlockList: DEFAULT_EXAM_BLOCKLIST };
+const EXAM_EVENTS = ['blocked', 'tab_switch', 'left_browser'];
+const KEEP_EXAMS = 20;
 const KEEP_DONE_DAYS = 14;
 
 let db = null;
@@ -94,6 +121,8 @@ export async function initStore() {
   db.settings = { ...DEFAULT_SETTINGS, ...db.settings };
   db.tasks ??= [];
   db.days ??= {};
+  db.exam ??= null; // the exam running right now, or null
+  db.examHistory ??= [];
   // Drop quests finished more than two weeks ago.
   const cutoff = Date.now() - KEEP_DONE_DAYS * 864e5;
   db.tasks = db.tasks.filter((t) => !t.done || new Date(t.completedAt).getTime() > cutoff);
@@ -187,8 +216,95 @@ export function updateSettings(patch) {
   if (patch.dailyMinutes !== undefined) db.settings.dailyMinutes = clamp(patch.dailyMinutes, 0, 600);
   if (patch.focusMinutes !== undefined) db.settings.focusMinutes = clamp(patch.focusMinutes, 5, 60);
   if (patch.breakMinutes !== undefined) db.settings.breakMinutes = clamp(patch.breakMinutes, 1, 30);
+  if (patch.examBlockList !== undefined) db.settings.examBlockList = cleanDomains(patch.examBlockList);
   save();
   return getSettings();
+}
+
+// Accepts "https://www.YouTube.com/watch?x" style input and keeps just "youtube.com".
+export function cleanDomains(list) {
+  const raw = Array.isArray(list) ? list : String(list ?? '').split(/[\s,]+/);
+  const out = new Set();
+  for (const item of raw) {
+    let d = String(item).trim().toLowerCase();
+    if (!d) continue;
+    d = d.replace(/^[a-z]+:\/\//, '').split(/[/?#:]/)[0].replace(/^www\./, '').replace(/\.$/, '');
+    if (/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d) && d.length <= 100) out.add(d);
+  }
+  return [...out].slice(0, 100);
+}
+
+// ---------- exam mode ----------
+// Only counts are kept: how many blocked visits, tab switches and times Chrome lost focus.
+// No URLs, page content or screenshots.
+
+function finishExam(endedBy) {
+  const e = db.exam;
+  if (!e) return null;
+  const endedAt = endedBy === 'timer' ? e.endsAt : new Date().toISOString();
+  const record = { ...e, endedAt, endedBy };
+  db.examHistory.unshift(record);
+  db.examHistory = db.examHistory.slice(0, KEEP_EXAMS);
+  db.exam = null;
+  save();
+  return record;
+}
+
+// The current exam (ends it automatically once its time is up).
+export function getExam() {
+  load();
+  if (db.exam && Date.parse(db.exam.endsAt) <= Date.now()) finishExam('timer');
+  return db.exam;
+}
+
+export function lastExam() {
+  getExam();
+  return db.examHistory[0] ?? null;
+}
+
+export function examHistory(n = 10) {
+  getExam();
+  return db.examHistory.slice(0, n);
+}
+
+export function startExam(minutes) {
+  if (getExam()) finishExam('restarted');
+  const mins = Math.min(240, Math.max(5, Math.round(Number(minutes) || 45)));
+  const now = Date.now();
+  db.exam = {
+    id: newId(),
+    startedAt: new Date(now).toISOString(),
+    endsAt: new Date(now + mins * 60e3).toISOString(),
+    minutes: mins,
+    events: { blocked: 0, tab_switch: 0, left_browser: 0 },
+  };
+  save();
+  return db.exam;
+}
+
+export function stopExam() {
+  if (!getExam()) return null;
+  return finishExam('parent');
+}
+
+export function recordExamEvent(type, count = 1) {
+  const exam = getExam();
+  if (!exam || !EXAM_EVENTS.includes(type)) return exam;
+  exam.events[type] += Math.min(50, Math.max(1, Math.round(Number(count) || 1)));
+  save();
+  return exam;
+}
+
+export function examPublic() {
+  const exam = getExam();
+  return {
+    active: Boolean(exam),
+    startedAt: exam?.startedAt ?? null,
+    endsAt: exam?.endsAt ?? null,
+    events: exam?.events ?? null,
+    blockList: load().settings.examBlockList,
+    lastResult: db.examHistory[0] ?? null,
+  };
 }
 
 // ---------- quests ----------

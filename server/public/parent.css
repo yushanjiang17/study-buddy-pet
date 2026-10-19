@@ -375,3 +375,106 @@ th.num {
     padding-right: 16px;
   }
 }
+
+/* ---------- exam mode ---------- */
+.exam-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.exam-head h2 {
+  margin: 0;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.badge.off {
+  background: #eef1e6;
+  color: #4b5d2c;
+}
+
+.badge.on {
+  background: var(--warn);
+  color: #fff;
+}
+
+#exam > p,
+#exam-off > p {
+  font-size: 14px;
+  margin: 10px 0 12px;
+  line-height: 1.5;
+}
+
+select,
+textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+
+textarea {
+  width: 100%;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  resize: vertical;
+  margin-top: 6px;
+}
+
+.exam-time {
+  font-size: 15px;
+  margin: 12px 0;
+}
+
+.exam-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.exam-counts div {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.exam-counts strong {
+  font-size: 22px;
+}
+
+.exam-counts span {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+button.danger {
+  background: var(--warn);
+}
+
+.row-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+#exam-history {
+  margin-top: 14px;
+}
+
+#exam-history h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}

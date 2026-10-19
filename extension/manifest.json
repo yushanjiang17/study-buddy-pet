@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Study Buddy Exam Mode",
+  "version": "0.1.0",
+  "description": "Pauses distracting and AI websites while a grown-up has turned on exam mode in Study Buddy. Counts only, never reads pages.",
+  "permissions": ["declarativeNetRequest", "webNavigation", "storage", "alarms"],
+  "host_permissions": ["https://*.onrender.com/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Study Buddy Exam Mode",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

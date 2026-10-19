@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Study Buddy Exam Mode · Settings</title>
+    <link rel="stylesheet" href="ui.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="icons/icon128.png" alt="" width="56" height="56" />
+        <div>
+          <h1>Study Buddy Exam Mode</h1>
+          <p class="muted">For grown-ups: connect this extension to your Study Buddy server.</p>
+        </div>
+      </header>
+
+      <form id="form">
+        <label>
+          Server address
+          <input id="serverUrl" type="url" placeholder="https://study-buddy-server-xxxx.onrender.com" required />
+          <span class="muted">Same as <code>serverUrl</code> in the pet's <code>app/config.local.json</code>. Local: http://localhost:3000</span>
+        </label>
+        <label>
+          Device token
+          <input id="deviceToken" type="password" autocomplete="off" placeholder="DEVICE_TOKEN from Render" />
+          <span class="muted">Same as <code>deviceToken</code> in <code>app/config.local.json</code>. Leave empty for a local server.</span>
+        </label>
+        <div class="actions">
+          <button type="submit">Save and test</button>
+          <span id="result" class="pill" hidden></span>
+        </div>
+      </form>
+
+      <section class="note">
+        <h2>How exam mode works</h2>
+        <ul>
+          <li>A grown-up turns exam mode on in the Study Buddy parent page. Within 30 seconds the extension shows a red <b>EXAM</b> badge.</li>
+          <li>Sites on the parent's list are paused and show a friendly "paused for your exam" page.</li>
+          <li>It counts paused-site visits, tab switches and times Chrome loses focus. Numbers only: no page content, no list of websites, no screenshots.</li>
+          <li>When the exam ends, everything unpauses automatically, even if the server can't be reached.</li>
+        </ul>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

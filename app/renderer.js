@@ -328,6 +328,8 @@
         return "Let's pick a schoolwork quest instead.";
       case 'no_steps':
         return "I couldn't split that one. Try describing the homework a bit more.";
+      case 'exam_mode':
+        return "It's exam time, so I'm guarding the gate. Let's do this after the exam!";
       case 'bad_device_token':
         return "The castle doesn't recognize me. (Grown-ups: check deviceToken in app/config.local.json.)";
       case 'image_too_large':
@@ -380,6 +382,7 @@
 
     renderQuests();
     applyUsage(s.usage);
+    applyExam(s.exam);
     if (!timer.running && timer.untouched) timer.remaining = focusLen();
     renderTimer();
   }
@@ -392,27 +395,81 @@
     bar.style.width = u.dailyMinutes ? `${Math.min(100, (u.minutesUsed / u.dailyMinutes) * 100)}%` : '0';
     bar.classList.toggle('over', u.overLimit);
 
-    const input = $('input');
     if (u.overLimit && !sleeping) {
       sleeping = true;
-      setBase('sleep');
-      input.disabled = true;
-      input.placeholder = 'See you tomorrow!';
-      $('attach').disabled = true;
-      $('snip').disabled = true;
-      setAttachment(null);
+      refreshMode();
       notify("That's all the screen time for today. Great work, hero! See you tomorrow.");
     } else if (!u.overLimit && sleeping) {
       sleeping = false;
-      setBase('idle');
-      input.disabled = false;
-      input.placeholder = 'Ask about your quest, or add a picture…';
-      $('attach').disabled = false;
-      $('snip').disabled = false;
+      refreshMode();
     }
   }
 
+  // ---------- exam mode ----------
+  // Turned on by a grown-up on the parent page. The pet guards the gate: no chat help, no pictures.
+  let examActive = false;
+  let examEndsAt = 0;
+  let examTick = null;
+
+  function applyExam(exam) {
+    const active = Boolean(exam?.active && Date.parse(exam.endsAt) > Date.now());
+    examEndsAt = active ? Date.parse(exam.endsAt) : 0;
+    $('exam-banner').hidden = !active;
+    if (active) {
+      const end = new Date(examEndsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      $('exam-banner-text').textContent = `Exam mode until ${end}. I'm guarding the gate. You've got this!`;
+    }
+    if (active && !examTick) examTick = setInterval(renderTimer, 1000); // live countdown
+    if (!active && examTick) {
+      clearInterval(examTick);
+      examTick = null;
+    }
+    if (active && !examActive) {
+      examActive = true;
+      if (timer.running) pauseTimer();
+      refreshMode();
+      notify("Exam time! I'll guard the gate. Chat and pictures are paused until it's over. Do your best!");
+    } else if (!active && examActive) {
+      examActive = false;
+      refreshMode();
+      const r = exam?.lastResult;
+      if (r) {
+        const e = r.events;
+        const n = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+        notify(
+          `Exam over, great job! Here's the record your grown-up sees too: ` +
+            `${n(e.blocked, 'paused-site visit', 'paused-site visits')}, ` +
+            `${n(e.tab_switch, 'tab switch', 'tab switches')}, left Chrome ${n(e.left_browser, 'time', 'times')}.`,
+        );
+      }
+      play('celebrate', { loops: 3 });
+    }
+    renderTimer();
+  }
+
+  // What the pet does at rest, and whether chat is locked, depends on exam mode and screen time.
+  function refreshMode() {
+    const base = examActive ? 'guard' : sleeping ? 'sleep' : 'idle';
+    if (base !== baseState) setBase(base);
+    const locked = examActive || sleeping;
+    const input = $('input');
+    input.disabled = locked;
+    input.placeholder = examActive
+      ? "Exam time. I'll be here when it's over!"
+      : sleeping
+        ? 'See you tomorrow!'
+        : 'Ask about your quest, or add a picture…';
+    $('attach').disabled = locked;
+    $('snip').disabled = locked;
+    $('send').disabled = locked;
+    $('focus-start').disabled = examActive;
+    if (locked) setAttachment(null);
+  }
+
   // Count screen time once a minute, and pick up quests a grown-up added.
+  // Check for exam mode and new quests more often than the screen-time heartbeat.
+  setInterval(() => refreshState(), 20000);
+
   setInterval(async () => {
     const res = await window.buddy.api('POST', '/usage/heartbeat');
     if (res.ok) applyState(res);
@@ -579,6 +636,7 @@
       history.push({ role: 'assistant', content: res.reply });
       addMsg('assistant', res.reply);
       if (res.animation === 'sleep') setBase('sleep');
+      if (res.animation === 'guard') refreshState();
       play(res.animation || 'experiment', { loops: 3 });
     } else {
       history.pop(); // keep turns alternating so the question can be retried
@@ -587,7 +645,7 @@
     }
 
     busy = false;
-    sendBtn.disabled = false;
+    sendBtn.disabled = examActive || sleeping;
     input.focus();
   });
 
@@ -714,6 +772,15 @@
     $('focus-time').textContent = mmss(timer.remaining);
     $('focus-time').classList.toggle('break', isBreak);
     $('focus-start').textContent = timer.running ? 'Pause' : timer.untouched ? 'Start' : 'Resume';
+    if (examActive) {
+      const left = Math.max(0, Math.round((examEndsAt - Date.now()) / 1000));
+      pill.hidden = false;
+      pill.textContent = `Exam ${mmss(left)}`;
+      pill.classList.remove('break');
+      pill.classList.add('exam');
+      return;
+    }
+    pill.classList.remove('exam');
     pill.hidden = !timer.running;
     pill.textContent = `${isBreak ? 'Break' : 'Focus'} ${mmss(timer.remaining)}`;
     pill.classList.toggle('break', isBreak);

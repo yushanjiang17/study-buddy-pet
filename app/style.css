@@ -98,6 +98,29 @@ button {
   color: var(--good);
 }
 
+/* exam mode */
+.timer-pill.exam {
+  border-color: #e9b9ad;
+  background: #b5482f;
+  color: #fff;
+}
+
+.exam-banner {
+  margin: 0 12px 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fbeae5;
+  border: 1px solid #efc7bb;
+  color: #7a2a17;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.exam-banner strong {
+  display: block;
+  font-size: 12.5px;
+}
+
 /* ---------- panel ---------- */
 .panel {
   position: absolute;
