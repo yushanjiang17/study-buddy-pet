@@ -46,8 +46,12 @@ const fileBackend = {
 async function postgresBackend(url) {
   const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url);
   const strict = process.env.DATABASE_SSL === 'verify';
+  // SSL is configured below, so drop the URL's own SSL options (Neon adds sslmode and channel_binding).
+  const cleanUrl = new URL(url);
+  cleanUrl.searchParams.delete('sslmode');
+  cleanUrl.searchParams.delete('channel_binding');
   const pool = new pg.Pool({
-    connectionString: url.replace(/[?&]sslmode=[^&]*/, ''),
+    connectionString: cleanUrl.toString(),
     ssl: local ? false : { rejectUnauthorized: strict },
     max: 3,
   });
