@@ -1,0 +1,10 @@
+{
+  "petDir": "../art/placeholder",
+  "scale": 0.75,
+  "fps": 8,
+  "serverUrl": "http://localhost:3000",
+  "student": {
+    "name": "Hero",
+    "grade": 5
+  }
+}

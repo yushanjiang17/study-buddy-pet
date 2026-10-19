@@ -1,0 +1,43 @@
+{
+  "id": "placeholder-buddy",
+  "displayName": "Placeholder Buddy",
+  "description": "Temporary placeholder sprite; replace spritesheet.png with final art.",
+  "spritesheetPath": "spritesheet.png",
+  "frameWidth": 192,
+  "frameHeight": 208,
+  "columns": 8,
+  "states": {
+    "idle": {
+      "row": 0,
+      "frames": 6
+    },
+    "thinking": {
+      "row": 1,
+      "frames": 6
+    },
+    "experiment": {
+      "row": 2,
+      "frames": 6
+    },
+    "give-quest": {
+      "row": 3,
+      "frames": 6
+    },
+    "celebrate": {
+      "row": 4,
+      "frames": 8
+    },
+    "encourage": {
+      "row": 5,
+      "frames": 4
+    },
+    "guard": {
+      "row": 6,
+      "frames": 6
+    },
+    "sleep": {
+      "row": 7,
+      "frames": 4
+    }
+  }
+}

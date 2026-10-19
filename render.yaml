@@ -1,0 +1,36 @@
+# Render Blueprint: deploys server/ as a public web service.
+# Secrets marked "sync: false" are asked for once, when you create the Blueprint on render.com.
+services:
+  - type: web
+    name: study-buddy-server
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: HOST
+        value: 0.0.0.0
+      - key: TZ
+        value: America/Los_Angeles
+      - key: CLAUDE_MODEL
+        value: claude-sonnet-5-5
+      - key: SAFETY_MODEL
+        value: claude-haiku-5-5
+      - key: DAILY_MESSAGE_LIMIT
+        value: "60"
+      - key: DEVICE_TOKEN
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: PARENT_EMAIL
+        sync: false
+      - key: PARENT_PASSWORD
+        sync: false

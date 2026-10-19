@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'"
+    />
+    <title>Study Buddy</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="bubble" class="bubble hit" hidden></div>
+    <button id="timer-pill" class="timer-pill hit" type="button" hidden></button>
+
+    <section id="panel" class="panel hit" hidden aria-label="Study buddy">
+      <div id="resize" class="resize-handle" title="Drag to resize · double-click to reset" aria-hidden="true"></div>
+      <header>
+        <div class="title">
+          <strong id="pet-name">Study Buddy</strong>
+          <span>I help you think it through.</span>
+        </div>
+        <span id="points" class="points" title="Stars you've earned">★ 0</span>
+        <button id="close" type="button" aria-label="Close">×</button>
+      </header>
+
+      <nav class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="chat" aria-selected="true">Chat</button>
+        <button type="button" role="tab" data-tab="quests" aria-selected="false">
+          Quests <span id="quest-count" class="count" hidden></span>
+        </button>
+        <button type="button" role="tab" data-tab="focus" aria-selected="false">Focus</button>
+      </nav>
+
+      <div class="view" data-view="chat">
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <div id="attachment" class="attachment" hidden>
+          <img id="attachment-img" alt="Picture you're about to send" />
+          <span>Picture ready. Add a question or just send it.</span>
+          <button id="attachment-remove" type="button" aria-label="Remove picture">×</button>
+        </div>
+        <form id="composer">
+          <div class="tools">
+            <button id="attach" type="button" class="icon" title="Add a picture of your homework" aria-label="Add a picture">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5 12.7 19.8a5 5 0 0 1-7.1-7.1l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"/></svg>
+            </button>
+            <button id="snip" type="button" class="icon" title="Snip a question from your screen" aria-label="Snip from screen">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v4M3 7h4M17 21v-4M21 17h-4"/><path d="M7 11v6h6M11 7h6v6"/></svg>
+            </button>
+          </div>
+          <textarea id="input" rows="2" placeholder="Ask about your quest, or add a picture…"></textarea>
+          <button id="send" type="submit">Send</button>
+        </form>
+        <input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+        <div id="drop-hint" class="drop-hint" hidden>Drop the picture here</div>
+      </div>
+
+      <div class="view" data-view="quests" hidden>
+        <p id="quest-status" class="status" aria-live="polite"></p>
+        <ul id="quest-list" class="quest-list"></ul>
+        <form id="quest-form">
+          <input id="quest-input" maxlength="120" placeholder="Add a quest, e.g. Spelling list" />
+          <button type="submit">Add</button>
+        </form>
+      </div>
+
+      <div class="view" data-view="focus" hidden>
+        <div class="focus">
+          <span id="focus-mode" class="focus-mode">Focus round</span>
+          <div id="focus-time" class="focus-time">25:00</div>
+          <div class="focus-actions">
+            <button id="focus-start" type="button">Start</button>
+            <button id="focus-reset" type="button" class="ghost">Reset</button>
+          </div>
+          <p id="focus-note" class="focus-note" aria-live="polite"></p>
+        </div>
+        <div class="usage">
+          <span id="usage-text"></span>
+          <div class="bar"><span id="usage-bar"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <canvas id="pet" aria-label="Study buddy"></canvas>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

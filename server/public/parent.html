@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Study Buddy · Parent</title>
+    <link rel="stylesheet" href="parent.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>Study Buddy</h1>
+        <p id="where">Parent view</p>
+      </div>
+      <button id="logout" class="ghost" hidden>Sign out</button>
+    </header>
+
+    <main>
+      <section id="login" class="card login" hidden>
+        <h2>Parent sign in</h2>
+        <form id="login-form" class="login-form">
+          <input id="email" type="email" autocomplete="username" placeholder="Email" hidden />
+          <input id="password" type="password" autocomplete="current-password" placeholder="Password" required />
+          <button type="submit">Sign in</button>
+        </form>
+        <p id="login-error" class="error" hidden></p>
+      </section>
+
+      <div id="dash" hidden>
+        <section class="stats">
+          <div class="stat">
+            <span class="label">Screen time today</span>
+            <strong id="s-time">0 min</strong>
+            <div class="bar"><span id="s-time-bar"></span></div>
+          </div>
+          <div class="stat">
+            <span class="label">Quests finished</span>
+            <strong id="s-tasks">0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">Focus rounds</span>
+            <strong id="s-focus">0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">Questions asked</span>
+            <strong id="s-msgs">0</strong>
+            <span id="s-subjects" class="sub"></span>
+          </div>
+        </section>
+
+        <section id="alerts" class="card"></section>
+
+        <div class="grid">
+          <section class="card">
+            <h2>Quests</h2>
+            <form id="task-form" class="row">
+              <input id="task-title" maxlength="120" placeholder="Add a quest, e.g. Finish math worksheet p.12" />
+              <button type="submit">Add</button>
+            </form>
+            <ul id="tasks" class="tasks"></ul>
+          </section>
+
+          <section class="card">
+            <h2>Settings</h2>
+            <form id="settings-form" class="settings">
+              <label>Daily screen time (minutes, 0 = no limit)<input id="set-daily" type="number" min="0" max="600" /></label>
+              <label>Focus round (minutes)<input id="set-focus" type="number" min="5" max="60" /></label>
+              <label>Break (minutes)<input id="set-break" type="number" min="1" max="30" /></label>
+              <button type="submit">Save settings</button>
+              <span id="settings-saved" class="saved" hidden>Saved</span>
+            </form>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>Last 7 days</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th class="num">Screen time</th><th class="num">Quests</th><th class="num">Focus</th
+                ><th class="num">Questions</th><th class="num">Alerts</th>
+              </tr>
+            </thead>
+            <tbody id="week"></tbody>
+          </table>
+        </section>
+
+        <p class="privacy">
+          Study Buddy never stores what your child types. You see counts, subjects and safety alerts only.
+          Your child can see their own quests, points and screen time.
+        </p>
+      </div>
+    </main>
+
+    <script src="parent.js"></script>
+  </body>
+</html>
